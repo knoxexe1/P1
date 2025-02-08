@@ -1,10 +1,9 @@
-# P1
 import asyncio
 from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
 
-# Replace with your bot token
-BOT_TOKEN = "TOKEN"
+# Replace with your actual bot token from BotFather
+BOT_TOKEN = "Token"
 
 # Store user data
 user_data = {}
@@ -12,6 +11,7 @@ user_data = {}
 # Start command
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.message.chat_id
+    print(f"/start received from {user_id}")
     await update.message.reply_text(
         "✨ Welcome to ShadowFortune! ✨\n"
         "We’re thrilled to have you here! 🎉\n"
@@ -114,14 +114,18 @@ async def confirm_payment(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = update.message.text.strip().lower()
     
     if text == "paid":
-        admin_id = "6657763025"  # Replace with actual admin ID
+        admin_id = 6657763025  # Replace with your actual admin ID (as an integer)
         await context.bot.send_message(
-            admin_id, f"Payment received from {user_data[user_id]['name']}.\nOrder details:\n"
-                      f"📦 Product: {user_data[user_id]['product']}\n"
-                      f"🚚 Delivery: {user_data[user_id]['delivery']}\n"
-                      f"📍 Location: {user_data[user_id]['location']}\n"
-                      f"📧 Email: {user_data[user_id]['email']}\n"
-                      f"📞 Phone: {user_data[user_id]['phone']}"
+            admin_id,
+            (
+                f"Payment received from {user_data[user_id]['name']}.\n"
+                f"Order details:\n"
+                f"📦 Product: {user_data[user_id]['product']}\n"
+                f"🚚 Delivery: {user_data[user_id]['delivery']}\n"
+                f"📍 Location: {user_data[user_id]['location']}\n"
+                f"📧 Email: {user_data[user_id]['email']}\n"
+                f"📞 Phone: {user_data[user_id]['phone']}"
+            )
         )
         
         await update.message.reply_text(
@@ -137,7 +141,7 @@ async def confirm_payment(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("Need assistance? Contact our support team at support@shadowfortune.com.")
 
-# Main function to start bot
+# Main function to start the bot
 async def main():
     app = Application.builder().token(BOT_TOKEN).build()
 
@@ -145,16 +149,14 @@ async def main():
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("help", help_command))
     
-    # Add message handlers
+    # Add message handlers (consider using ConversationHandler for a better flow)
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, store_details))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, select_product))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, select_delivery))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, confirm_payment))
 
     print("Bot is running...")
+    await app.run_polling()
 
-    # Run the bot without asyncio.run() issue
-    if __name__ == "__main__":
-        loop = asyncio.get_event_loop()
-        loop.run_until_complete(app.run_polling())
-
+if __name__ == "__main__":
+    asyncio.run(main())
